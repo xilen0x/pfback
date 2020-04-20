@@ -1,0 +1,307 @@
+NOTACIONES
+
+
+>> ARCHIVO O CARPETA <<
+++ LINEA DE COMANDOS TERMINAL ++
+** LINEA DE COMANDOS ARCHIVO **
+[LINEA TEMPORAL DEL VIDEO]
+"URLS CON MAS INFORMACION"
+
+
+
+VIDEO1 [0:00 - 25:47] --- COMENZANDO A CREAR EL PROYECTO ---
+
+
+
+    --- [0:00 - 9:20] --- PRIMEROS PASOS ---
+        PASO 0: Una vez instalado Python (3.7.7) y pipenv (2018.11.26) con sus respectivas versiones,
+        hacemos una nueva carpeta donde se realizara el proyecto. En este caso será >> API-REST-FLASK <<.
+
+        PASO 1: Dentro de esta carpeta debemos hacer un archivo llamado >> Pipfile <<.
+
+        PASO 2: Una vez hecho el archivo, vamos a la terminal y escribimos ++ pipenv shell ++ para ha-
+        cer el entorno virtual.
+
+        PASO 3: Una vez creado el entorno virtual, hacemos un archivo >> app.py << y comenzamos a instalar
+        las librerias de Flask con el comando en terminal ++ pipenv install flask flask-script flask-migrate flask-cors flask-sqlalchemy ++
+
+        Las librerias y que hace cada una de ellas son las siguientes:
+            - Flask: Libreria principal.
+            - Flask Script / Migrate: Configurar el entorno de la aplicacion.
+            - Flask CORS: Decidir quien o no puede consultar la pagina.
+            - Flask SQLAlchemy: Permite conectarse al gestor de BBDD.
+
+        UNA VEZ TERMINADA LA INSTALACION SE CREARÁ AUTOMATICAMENTE EL ARCHIVO >> Pipfile.lock <<. EN ESTE
+        ARCHIVO PODREMOS VER QUE VERSIONES DE PAQUETES TENEMOS INSTALADO DE CADA LIBRERIA.
+
+        PASO 4: Hacer una carpeta >> templates << CON UN ARCHIVO >> index.html <<. [Aqui me estoy 
+        anticipando al registro 21:30 del VIDEO1, pero que no genera problemas en la creacion].
+        En el HTML simplemente hacemos ** HTML:5 ** y modificamos el ** title ** del HEAD y en el
+        BODY simplemente colocamos ** <H1> ** con lo que deseemos.
+
+
+
+    --- [9:20 - 25:47] --- PROGRAMANDO ARCHIVOS APP.PY Y MODELS.PY ---
+        
+
+
+        En cada uno de los archivos se puede ver que realizar. Existen 2 cosas importantes en las que
+        tuve problemas en el momento en que lo hice por primera vez:
+
+            1. INDENTATION (sangrias/espacio): La solucion fue directamente revisar cada linea de 
+            codigo eliminando cada espacio innecesario.
+            2. Mayusculas y Minusculas.
+
+        En sintesis, lo que se realiza en estos minutos de video es "conectar" cada una de las librerias
+        y archivos que instalamos en la primera parte del video de manera que trabajen al unisono. En 
+        cada uno de los archivos, por lo menos en este video debemos poner lo siguiente:
+
+
+    --- CODIGOS EJECUTADOS ---
+
+
+        
+        ** INICIO COMENTARIO APP.PY **
+
+        from flask import Flask, jsonify, request, render_template
+        from flask_script import Manager
+        from flask_migrate import Migrate, MigrateCommand
+        from flask_cors import CORS
+        from models import db
+
+
+        app = Flask(__name__)
+        app.config['DEBUG '] = True
+        app.config['ENV'] = 'development'
+        app.config['SQLALCHEMY_DATABASE_URI'] = ''
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+        Migrate(app, db)
+        CORS(app)
+
+        manager = Manager(app)
+        manager.add_command("db", MigrateCommand)
+
+        @app.route("/")
+        def root():
+            return render_template('index.html')
+
+        if __name__ == '__main__':
+            manager.run()
+
+        ** FIN COMENTARIO APP.PY **
+
+
+
+        ** INICIO COMENTARIO MODELS.PY **
+
+        from flask_sqlalchemy import SQLAlchemy
+        db = SQLAlchemy()
+
+        ** FIN COMENTARIO MODELS.PY **
+
+
+
+        ** INICIO COMENTARIO INDEX.HTML **
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>API REST FLASK</title>
+        </head>
+        <body>
+            <h1>API REST FLASK</h1>
+        </body>
+        </html>
+
+        ** FIN COMENTARIO INDEX.HTML **
+
+
+
+    FIN VIDEO1 --- COMENZANDO A CREAR EL PROYECTO ---
+
+
+
+
+
+
+VIDEO2 [0:00 - 19:09] --- DEFINIR RUTAS PARA UN DETERMINADO METODO ---
+
+
+
+    En el segundo video nos presentan la codificacion para definir rutas, tanto para 
+    1 parametro [00:00 - 15:30] como para varios parametros [15:30 - 19:09]. Para esta
+    parte del video necesitamos recordar 4 cosas vistas con anterioridad:
+
+    1) Los metodos para poder funcionar con una API, o los mas comunes, son: GET, PUT, 
+    POST y DELETE.
+        a) GET puede trabajar a todo nivel por que con los accesos suficientes, puede
+        recorrer completamente la API, ya que solo puede leer información.
+        b) POST crea nuevos recursos para la API y por lo tanto crea id's.
+        c) PUT se usa para actualizar los recursos existentes en una API. Su finalidad
+        es reemplazar los valores en vez de modificarlo. Por lo tanto, necesita de una 
+        version preexistente de un id.
+        d) DELETE borra informacion de la API y por lo tanto necesita de informacion 
+        preexistente para poder funcionar. El espacio queda NULL.
+
+        "https://www.restapitutorial.com/lessons/httpmethods.html"
+
+    2) Codigos de Estado de petición:
+        - 1XX: Informativos.
+        - 2XX: Recibido, procesado o ejecutado correctamente.
+        - 3XX: Información cambiada de lugar.
+        - 4XX: Errores por parte del usuario.
+        - 5XX: Errores por parte del servidor.
+
+        "https://www.xataka.com/basics/errores-404-500-502-504-y-mas-en-paginas-web-que-significan"
+
+    3) OBJETOS: En programacion debemos recordar que hay varios tipos de datos con los que podemos
+    trabajar como lo son los strings, integers, booleans, NULL, array y objetos. Las APIs utilizan
+    en practicamente su totalidad el formato JSON que entrega data en forma de objetos. Pueden estar
+    escritos en 1 sola linea, pero por "buenas practicas" se ven de la siguiente forma:
+
+    {
+        "ATRIBUTO1": "VALOR1",
+        "ATRIBUTO2": "VALOR2",
+        .
+        .
+        .
+        "ATRIBUTON": "VALORN"
+    }
+
+    4) Insomnia: En el curso usamos insomnia principalmente para generar un "dialogo" con la API
+    de manera de hacer consultas en ella.
+
+    Entrando en materia del video y tal como se explico antes se divide en 2 partes:
+
+        1) Definir rutas para 1 solo parametro:
+            
+            
+            
+            **
+
+
+
+            @app.route('/api/test', methods=['GET', 'POST'])
+            @app.route('/api/test/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+            def test(id = None):
+            if request.method == 'GET':
+                return jsonify({"msg": "method GET"}), 200              <----- ¡¡¡DENTRO DE JSONIFY HAY UN OBJETO!!!
+            if request.method == 'POST':
+                return jsonify({"msg": "method POST"}), 200
+            if request.method == 'PUT':
+                return jsonify({"msg": "method PUT"}), 200
+            if request.method == 'DELETE':
+                return jsonify({"msg": "method DELETE"}), 200
+
+
+
+            **
+
+
+
+        2) Definir rutas para 2 parametros:
+
+            
+            
+            **
+
+
+
+            @app.route('/api/test/<int:id>/category/<int:cat_id>', methods=['GET', 'POST'])
+            def test2(id, cat_id):
+            if request.method == 'GET':
+                return jsonify({"valores": {"id": id, "cat_id": cat_id}}), 200          <----- AQUI HAY 2 OBJETOS DENTRO DE OTRO QUE SE LLAMA "VALORES"
+            if request.method == 'POST':
+                return jsonify({"valores": {"id": id, "cat_id": cat_id}}), 200
+
+
+
+            **
+
+
+
+    FIN VIDEO2 [0:00 - 19:09] --- DEFINIR RUTAS PARA UN DETERMINADO METODO ---
+
+
+
+
+
+
+VIDEO3 [0:00 - 25:06] --- BASE DE DATOS ---
+
+
+    INTRODUCCION
+        Primero que todo definir realmente lo que es una Base de Datos (BBDD). Wikipedia dice:
+        "es un conjunto de datos pertenecientes a un mismo contexto y almacenados sistemáticamente para su posterior uso."
+        Particularmente las BBDD funcionan en base a columnas (bajo mi opinion personal son muy 
+        pocos los casos en los que no funcionan asi o en verdad es poco convencional o parte de las 
+        "buenas practicas" trabajar con una BBDD que no se base en columnas), en donde cada columna 
+        almacena una categoria especifica con la cual uno puede generar diferentes cruces con esta 
+        informacion. Por ejemplo, para un supermercado:
+
+            ID  |   CATEGORIA   |   PRODUCTO    |   COSTO(KG)   |   PRECIO(KG)  |   CANTIDAD STOCK
+            1   |     FRUTAS    |    MANZANA    |      300      |      700      |         500
+            2   |     FRUTAS    |     PERA      |      200      |      600      |         700
+            3   |   ABARROTES   |     ARROZ     |      500      |     1000      |         300
+            4   |   ABARROTES   |   TALLARINES  |      300      |      700      |         100
+            5   |   TECNOLOGIA  |       TV      |     100000    |    300000     |         50
+            6   |   TECNOLOGIA  |       PC      |     150000    |    700000     |         10
+            
+        De esta forma puedo saber que las FRUTAS>MANZANA tiene ID=1, cuanto cuesta, a cuanto lo vendo y cuanto
+        tengo disponible para vender. Por lo tanto la informacion la iremos almacenando en columnas.
+
+        Ya para este punto debemos tener instalado un software cliente de SQL y herramienta de administración 
+        de bases de datos. Aqui se pueden tener en cuenta los 2 mas importantes que son SQL Workbench o DBeaver,
+        en mi caso uso el ultimo con la version 7.0.1
+
+
+
+    --- CREACION DE LA BASE DE DATOS ---
+
+
+
+        Dicho esto, el video3 tiene 2 partes importantes:
+
+            0) SOLO EN FORMA DE RECORDATORIO, EN EL VIDEO1 CREAMOS 3 ARCHIVOS, >> APP.PY << COMO ARCHIVO
+            MAESTRO PARA TRABAJAR Y CENTRALIZAR LA INFORMACION, >> INDEX.HTML << PARA VISUALIZAR INFO. Y 
+            POR ULTIMO >> MODELS.PY << DONDE SE GENERARÁ EL MODELAMIENTO DE LA TABLA Y BBDD EN SI MISMA.
+
+            1) [00:00 - 05:00] GENERAR LA TABLA PARA LA BASE DE DATOS: Codificamos en >> models.py <<, 
+            transcrito linea por linea dice lo siguiente:
+                a) Creamos una tabla, de tipo clase llamada "Contact" que hereda db.model.
+                b) Le decimos que la tabla se llamará "contacts".
+                c) Ahora le damos los atributos que tendrá cada columna. Para este caso, las columnas
+                se llamarán "ID" (de tipo integer), "NAME" y "PHONE" (ambos de tipo string con maximo
+                100 caracteres cada 1). Aqui vienen 2 atributos importantes:
+                    - Primary_key: Corresponde a la clave primaria de la tabla, este valor no lo entregamos
+                    sino que se genera de forma automatica cada vez que se ingresa información a la BBDD.
+                    - Nullable: Entrega de información obligatoria.
+                d) Serializar la informacion, ergo, transformo la informacion en un objeto para almacenar.
+            RESUMEN: DEFINO BBDD, DEFINO EL NOMBRE DE LA TABLA, DEFINO COLUMNAS Y SERIALIZO LA INFO ENTREGADA
+            
+            
+            2) [05:00 - ] GENERAR LA BASE DE DATOS:
+                a) Una vez que ya definimos comos será la base de datos nos pasamos a >> APP.PY << para
+                darle formato para poder ver la informacion en una herramienta visual.
+                b) hay 2 configuraciones:
+                    i. Para SQLite (Para trabajos mas bien rapidos): Agregamos estas 2 lineas
+
+
+
+                    **
+                    import os
+
+                    BASE_DIR = 
+
+
+                    ii. Para MySQL (Para traabajos 4x4): 
+
+        ****************EJECUTAR LA MIGRACION MIN 10:00*************
+        VOLVI (?) A INSTALAR EL SQL-ALCHEMY Y SE INSTALO TAMBIEN ++ pipenv install PyMySQL ++
+        Y CARGUE LOS MIGRATECOMMAND EN TERMINAL DE LA SIGUIENTE MANERA Y ORDEN:
+            ++ python app.py db init ++
+            ++ python app.py db migrate ++
+            ++ python app.py db upgrade ++
