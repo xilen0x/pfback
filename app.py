@@ -93,6 +93,32 @@ def register():
 
     return jsonify(data), 201
 
+@app.route('/update-profile', methods=['POST'])
+@jwt_required
+def changePassword():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON request"}), 400
+
+    oldpassword = request.json.get('oldpassword', None)
+    password = request.json.get('password', None)
+
+    if not oldpassword or oldpassword == '':
+        return jsonify({"msg": "Missing oldpassword request"}), 400
+    if not password or password == '':
+        return jsonify({"msg": "Missing password request"}), 400
+
+    username = get_jwt_identity()
+
+    user = User.query.filter_by(username=username).first()
+    
+    if bcrypt.check_password_hash(user.password, oldpassword):
+        user.password = bcrypt.generate_password_hash(password)
+        db.session.commit()
+        return jsonify({"success": "Tu contraseña ha cambiado exitosamente!"}), 200
+    else:
+        return jsonify({"msg": "La contraseña actual no es correcta!"}), 400
+
+
 @app.route('/users', methods=['GET', 'POST'])
 @app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
