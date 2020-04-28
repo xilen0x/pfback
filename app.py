@@ -34,64 +34,115 @@ def login():
     if not request.is_json:
         return jsonify({"msg": "No es un objeto JSON"}), 400
 
-    username = request.json.get('username', None)
+    email = request.json.get('email', None)
     password = request.json.get('password', None)
-   
 
-    if not username or username == '':
-        return jsonify({"msg": "Se requiere el username"}), 400
+ #VALIDACIONES
+    if not email or email == '':
+        return jsonify({"msg": "Missing email"}), 400
     if not password or password == '':
-        return jsonify({"msg": "Se requiere el password"}), 400
+        return jsonify({"msg": "Missing password."}), 400
 
-    user = User.query.filter_by(username=username).first()#si existe el usuario...se almacena en user
+    user = User.query.filter_by(email=email).first()#si existe el usuario...se almacena en user
     if not user:
-        return jsonify({"msg": "El username o password no son correctos!"}),401 #si no existe le envia este msg
+        return jsonify({"msg": "El email o password no son correctos!"}),401 #si no existe le envia este msg
 
     if bcrypt.check_password_hash(user.password, password):
-        access_token = create_access_token(identity=user.username)
+        access_token = create_access_token(identity=user.email)
+        print(access_token)
         data = {
             "access_token": access_token,
             "user": user.serialize()
         }
         return jsonify(data), 200
     else:
-        return jsonify({"msg": "The username or password are not correct!"}),401
+        return jsonify({"msg": "El email o password no son correctos!"}),401
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['POST'])#REGISTRO
 def register():
     if not request.is_json:
         return jsonify({"msg": "Al parecer no es un objeto JSON"}), 400
 
-    username = request.json.get('username', None)
+    email = request.json.get('email', None)
     password = request.json.get('password', None)
-    name = request.json.get('name', '')
-    lastname = request.json.get('lastname', '')
+    nombre = request.json.get('nombre', '')
+    apellido = request.json.get('apellido', '')
+    rut = request.json.get('rut', '')
+    pais = request.json.get('pais', '')
+    ciudad = request.json.get('ciudad', '')
+    sexo = request.json.get('sexo', '')
+    #avatar = request.json.get('avatar', '')
 
-    if not username or username == '':
-        return jsonify({"msg": "Missing username req."}), 400
+#VALIDACIONES
+    if not email or email == '':
+        return jsonify({"msg": "Missing email"}), 400
     if not password or password == '':
-        return jsonify({"msg": "Missing password req."}), 400
-
-    user = User.query.filter_by(username=username).first()
+        return jsonify({"msg": "Missing password."}), 400
+    if not nombre or nombre == '':
+        return jsonify({"msg": "Missing nombre"}), 400
+    if not apellido or apellido == '':
+        return jsonify({"msg": "Missing apellido"}), 400
+    if not rut or rut == '':
+        return jsonify({"msg": "Missing rut"}), 400
+    if not pais or pais == '':
+        return jsonify({"msg": "Missing País"}), 400
+    if not ciudad or ciudad == '':
+        return jsonify({"msg": "Missing Ciudad"}), 400
+    
+    user = User.query.filter_by(email=email).first()
     if user:
-        return jsonify({"msg": "username already exist"}),400
-
-    user = User()
-    user.username = username
+        return jsonify({"msg": "email already exist"}),400
+    rut = User.query.filter_by(rut=rut).first()
+    if rut:
+        return jsonify({"msg": "rut already exist"}),400
+    user = User() # se crea una instancia de la clase User
+    #asignando valores a los campos corresp.
+    user.email = email 
     user.password = bcrypt.generate_password_hash(password)
-    user.name = name
-    user.lastname = lastname
+    user.nombre = nombre
+    user.apellido = apellido
+    user.rut = rut
+    user.pais = pais
+    user.ciudad = ciudad
+    user.sexo = sexo
+    #user.u_avatar = u_avatar
 
-    db.session.add(user)
+    db.session.add(user) #se agrega todo lo anterior y se hace commit
     db.session.commit()
 
-    access_token = create_access_token(identity=user.username)
+    access_token = create_access_token(identity=user.email)
     data = {
         "access_token": access_token,
         "user": user.serialize()
     }
 
     return jsonify(data), 201
+
+@app.route('/update-profile', methods=['POST'])
+@jwt_required
+def changePassword():
+    if not request.is_json:
+        return jsonify({"msg": "Missing JSON request -102"}), 400
+
+    oldpassword = request.json.get('oldpassword', None)
+    password = request.json.get('password', None)
+
+    if not oldpassword or oldpassword == '':
+        return jsonify({"msg": "Missing oldpassword request -108"}), 400
+    if not password or password == '':
+        return jsonify({"msg": "Missing password request -110"}), 400
+
+    email = get_jwt_identity()
+
+    user = User.query.filter_by(email=email).first()
+    
+    if bcrypt.check_password_hash(user.password, oldpassword):
+        user.password = bcrypt.generate_password_hash(password)
+        db.session.commit()
+        return jsonify({"success": "Tu contraseña ha cambiado exitosamente! -119"}), 200
+    else:
+        return jsonify({"msg": "La contraseña actual no es correcta! -121"}), 400
+
 
 @app.route('/users', methods=['GET', 'POST'])
 @app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
