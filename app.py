@@ -122,15 +122,15 @@ def register():
 @jwt_required
 def changePassword():
     if not request.is_json:
-        return jsonify({"msg": "Missing JSON request -102"}), 400
+        return jsonify({"msg": "Missing JSON request"}), 400
 
     oldpassword = request.json.get('oldpassword', None)
     password = request.json.get('password', None)
 
     if not oldpassword or oldpassword == '':
-        return jsonify({"msg": "Missing oldpassword request -108"}), 400
+        return jsonify({"msg": "Ingrese su actual contraseña!"}), 400
     if not password or password == '':
-        return jsonify({"msg": "Missing password request -110"}), 400
+        return jsonify({"msg": "Ingrese su nueva contraseña!"}), 400
 
     email = get_jwt_identity()
 
