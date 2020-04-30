@@ -1,11 +1,16 @@
+import os, getpass
 from flask import Flask, jsonify, request, render_template
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token, get_jwt_identity)
+from werkzeug.utils import secure_filename
+from functions import allowed_file
 from models import db, User
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+ALLOWED_EXTENSIONS_IMAGES = {'png', 'jpg', 'jpeg', 'gif', 'svg'}
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -14,6 +19,8 @@ app.config['ENV'] = 'development'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
 app.config['JWT_SECRET_KEY'] = 'super-secret'  # Cambiar luego!!!
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static')
+
 jwt = JWTManager(app)
 
 db.init_app(app)
@@ -60,17 +67,17 @@ def login():
 
 @app.route('/register', methods=['POST'])#REGISTRO
 def register():
-    if not request.is_json:
-        return jsonify({"msg": "Al parecer no es un objeto JSON"}), 400
+    #if not request.is_form:
+    #    return jsonify({"msg": "Missing Form request"}), 400
 
-    email = request.json.get('email', None)
-    password = request.json.get('password', None)
-    nombre = request.json.get('nombre', '')
-    apellido = request.json.get('apellido', '')
-    rut = request.json.get('rut', '')
-    pais = request.json.get('pais', '')
-    ciudad = request.json.get('ciudad', '')
-    sexo = request.json.get('sexo', '')
+    email = request.form.get('email', None)
+    password = request.form.get('password', None)
+    nombre = request.form.get('nombre', '')
+    apellido = request.form.get('apellido', '')
+    rut = request.form.get('rut', '')
+    pais = request.form.get('pais', '')
+    ciudad = request.form.get('ciudad', '')
+    sexo = request.form.get('sexo', '')
     #avatar = request.json.get('avatar', '')
 #VALIDACIONES
     if not email or email == '':
@@ -94,6 +101,14 @@ def register():
     rut = User.query.filter_by(rut=rut).first()
     if rut:
         return jsonify({"msg": "rut already exist"}),400
+
+    file = request.files['avatar']
+    if file and file.filename != '' and allowed_file(file.filename, ALLOWED_EXTENSIONS_IMAGES):#si existe el archivo y esta dentro de las extensiones permitidas
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(os.path.join(app.config['UPLOAD_FOLDER'], 'images/avatars'), filename))
+    else:
+        return jsonify({"msg":"Archivo no permitido, debe ser de extensión png, jpg, jpeg, gif o svg"})
+
     user = User() # se crea una instancia de la clase User
     #asignando valores a los campos corresp.
     user.email = email 
@@ -104,7 +119,8 @@ def register():
     user.pais = pais
     user.ciudad = ciudad
     user.sexo = sexo
-    #user.u_avatar = u_avatar
+    if file:
+        user.avatar = filename
 
     db.session.add(user) #se agrega todo lo anterior y se hace commit
     db.session.commit()

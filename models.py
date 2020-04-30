@@ -12,7 +12,7 @@ class User(db.Model):
     ciudad = db.Column(db.String(100), nullable=True)
     sexo = db.Column(db.String(100), nullable=True)
     password = db.Column(db.String(100), nullable=False)
-    #u_avatar = db.Column(db.String(250), nullable=True, default='default.jpg')#foto por default, mientras el usuario no suba una.
+    avatar = db.Column(db.String(250), nullable=True, default='default.jpg')#foto por default, mientras el usuario no suba una.
     
 
     def serialize(self):
@@ -24,6 +24,6 @@ class User(db.Model):
 	        "email":self.email,
     	    "pais":self.pais,
     	    "ciudad":self.ciudad,
-    	    "sexo":self.sexo
-    	    #"avatar":self.avatar
+    	    "sexo":self.sexo,
+    	    "avatar":self.avatar
         }
