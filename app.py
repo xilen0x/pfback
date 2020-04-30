@@ -4,7 +4,7 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from flask_jwt_extended import (JWTManager, jwt_required, create_access_token, get_jwt_identity)
-from models import db, User
+from models import db, User, Tramits, Tasks
 
 
 app = Flask(__name__)
@@ -106,6 +106,234 @@ def users(id = None):
     if request.method == 'DELETE':
         return jsonify({"msg": "users delete"}), 200
 
+#DESDE AQUI PARTE DASHBOARD TODOLIST
+
+@app.route('/tramits', methods=['GET', 'POST'])                           #ESTAS SON LAS RUTAS PARA LA TABLA TRAMITS 
+@app.route('/tramits/<int:tr_id>', methods=['GET', 'PUT', 'DELETE'])
+# @jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
+def tramits(tr_id = None):
+    if request.method == 'GET':
+        if tr_id is not None:
+            tramit = Tramits.query.get(tr_id)
+            if tramit:
+                return jsonify(tramit.serialize()), 200
+            else:
+                return jsonify({"msg": "No se encuentra dicho tramite"}), 404
+        else:
+            tramits = Tramits.query.all()
+            tramits = list(map(lambda tramit: tramit.serialize(), tramits))
+            return jsonify(tramits), 200                      #Validacion de contenido
+        
+    if request.method == 'POST':
+        tramit = request.json.get('tramit', None)
+        description = request.json.get("description", None)
+        ta_id = request.json.get('ta_id', None)
+
+        if not tramit and tramit == "":
+            return jsonify({"msg": "Ingresar Nombre del Tramite"}), 400
+        elif not ta_id and ta_id == "":
+            return jsonify({"msg": "No hay tareas"}), 400     #Validando las variables
+
+        tramits = Tramits()
+        tramits.tramit = tramit
+        tramits.description = description
+        tramits.ta_id = ta_id                        #Guardando/Asignando valores
+
+        db.session.add(tramits)
+        db.session.commit()
+
+        return jsonify(tramits.serialize()), 200
+
+    if request.method == 'PUT':
+        tramit = request.json.get("tramit", None)
+        description = request.json.get("description", None)
+        ta_id = request.json.get("ta_id", None)
+
+        if not tramit and tramit == "":
+            return jsonify({"msg": "Field tramite is required"}), 400  # 400 o 422
+        elif not ta_id and ta_id == "":
+            return jsonify({"msg": "Field tareas is required"}), 400  # 400 o 422
+
+        tramitpost = Tramits.query.get(tr_id) #busca por el id
+    
+        if not tramitpost:
+            return jsonify({"msg": "Not Found"}), 404 # para no actualizar algo q no existe
+
+        tramitpost.tramit = tramit
+        tramitpost.description = description
+        tramitpost.ta_id = ta_id
+
+        db.session.commit() # para actualizar y guardar en la bd
+
+        return jsonify(tramitpost.serialize()), 200
+
+    if request.method == 'DELETE':
+        tramits = Tramits.query.get(tr_id)
+        if not tramits:
+            return jsonify({"msg": "Item not found"}), 400
+        db.session.delete(tramits)
+        db.session.commit()
+        return jsonify({"msg": "Item deleted"}), 200
+
+@app.route('/tasks', methods=['GET', 'POST'])                              #ESTAS SON LAS RUTAS PARA LA TABLA DE TASKS
+@app.route('/tasks/<int:ta_id>', methods=['GET', 'PUT', 'DELETE'])
+# @jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
+def tasks(ta_id = None):
+    if request.method == 'GET':
+        if ta_id is not None:
+            task = Tasks.query.get(ta_id)
+            if task:
+                return jsonify(task.serialize()), 200
+            else:
+                return jsonify({"msg": "No se encuentra dicha tarea"}), 404
+        else:
+            tasks = Tasks.query.all()
+            tasks = list(map(lambda task: task.serialize(), tasks))
+            return jsonify(tasks), 200                      #Validacion de contenido
+
+    if request.method == 'POST':
+        task01 = request.json.get('task01', None)
+        task02 = request.json.get('task02', None)
+        task03 = request.json.get('task03', None)
+        task04 = request.json.get('task04', None)
+        task05 = request.json.get('task05', None)
+        task06 = request.json.get('task06', None)
+        task07 = request.json.get('task07', None)
+        task08 = request.json.get('task08', None)
+        task09 = request.json.get('task09', None)
+
+        if not task01 and task01 == "":
+            return jsonify({"msg": "Ingresar por lo menos la primera tarea"}), 400
+
+        tasks = Tasks()
+        tasks.task01 = task01
+        tasks.task02 = task02
+        tasks.task03 = task03
+        tasks.task04 = task04
+        tasks.task05 = task05
+        tasks.task06 = task06
+        tasks.task07 = task07
+        tasks.task08 = task08
+        tasks.task09 = task09
+
+        db.session.add(tasks)
+        db.session.commit()
+
+        return jsonify(tasks.serialize()), 200
+
+    if request.method == 'PUT':
+        task01 = request.json.get('task01', None)
+        task02 = request.json.get('task02', None)
+        task03 = request.json.get('task03', None)
+        task04 = request.json.get('task04', None)
+        task05 = request.json.get('task05', None)
+        task06 = request.json.get('task06', None)
+        task07 = request.json.get('task07', None)
+        task08 = request.json.get('task08', None)
+        task09 = request.json.get('task09', None)
+
+        if not task01 and task01 == "":
+            return jsonify({"msg": "Ingresar por lo menos la primera tarea"}), 400
+
+        taskpost = Tasks.query.get(ta_id) #busca por el id
+    
+        if not taskpost:
+            return jsonify({"msg": "Not Found"}), 404 # para no actualizar algo q no existe
+
+        taskpost.task01 = task01
+        taskpost.task02 = task02
+        taskpost.task03 = task03
+        taskpost.task04 = task04
+        taskpost.task05 = task05
+        taskpost.task06 = task06
+        taskpost.task07 = task07
+        taskpost.task08 = task08
+        taskpost.task09 = task09
+
+        db.session.commit() # para actualizar y guardar en la bd
+
+        return jsonify(taskpost.serialize()), 200
+        
+    if request.method == 'DELETE':
+        tasksid = Tasks.query.get(ta_id)
+        if not tasksid:
+            return jsonify({"msg": "Item not found"}), 400
+        db.session.delete(tasksid)
+        db.session.commit()
+        return jsonify({"msg": "Tasks deleted"}), 200
+
+
 
 if __name__ == '__main__':
     manager.run()
+
+
+# @app.route("/dashboard/todotramite")
+# @app.route("/dashboard/todotramite/<input1>", methods=["GET", "POST", "PUT", "DELETE"])
+# def handler(input1=None):
+#     if request.method == "GET":
+#         # if the api received a name, get the column with the name.
+#         if input1 is not None:
+#             todos = Todos.query.filter_by(name=input1).first()
+#             if todos:
+#                 return jsonify(todos.serialize()), 200
+#             else:
+#                 return jsonify({"msg": "Not Found"}), 404
+#         else:
+#             # else the api did not get a name, get all columns
+#             todos = Todos.query.all()
+#             # create the array contacts, containing an array of the serialization of all the elements in the table Todos
+#             # using the function lambda and the map method
+#             todos = list(map(lambda todos: todos.serialize(), todos))
+#             # jsonify it and returns it to the request
+#             return jsonify(todos), 200
+
+#     if request.method == "POST":
+
+#         if not input1 or input1 == "":  # si no llego un nombre o el nombre esta vacio
+#             return {"msg": "Field name is required"}, 400  # 422
+#         # todo =  object Todos,
+#         todo = Todos()
+#         todo.name = input1
+#         todo.tareas = ""
+#         db.session.add(todo)
+#         db.session.commit()
+#         return {"result": "ok"}, 200  # 422
+
+#     if request.method == "PUT":
+#         # revisa la request y captura el elemento name, idem para phone
+#         tareas = request.json
+
+#         if not tareas or tareas == "":  # si no llego una tarea o las tareas estan vacias
+#             return {"msg": "Field tareas is required"}, 400  # 422
+
+#         todos = Todos.query.filter_by(name=input1).first()
+
+#         if not todos:
+#             return {"msg": "user not found"}, 404
+        
+#         jsonify(tareas)
+#         print(tareas)
+#         todos.tareas = json.dumps(tareas)
+#         db.session.commit()
+
+#         # CREATED
+#         return {"result": "A list with " + str(len(tareas))+" todos was succesfully saved"}, 200
+
+#     if request.method == "DELETE":
+
+#         todos = Todos.query.filter_by(name=input1).first()
+
+#         if not todos:
+#             return {"msg": "Not Found"}, 400
+
+#         db.session.delete(todos)
+#         db.session.commit()
+#         return {"msg": "ok"}, 200
+
+
+# @app.route("/api/todos/names", methods=["GET"])
+# def namegiver():
+#     users = Todos.query.all()
+#     users = list(map(lambda user: user.name, users))
+#     return jsonify(users), 200
