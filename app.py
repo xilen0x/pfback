@@ -1,5 +1,5 @@
 import os, getpass
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, send_from_directory
 from flask_script import Manager
 from flask_migrate import Migrate, MigrateCommand
 from flask_bcrypt import Bcrypt
@@ -79,7 +79,7 @@ def register():
     ciudad = request.form.get('ciudad', '')
     sexo = request.form.get('sexo', '')
     #avatar = request.json.get('avatar', '')
-#VALIDACIONES
+    #VALIDACIONES
     if not email or email == '':
         return jsonify({"msg": "Missing email"}), 400
     if not password or password == '':
@@ -193,6 +193,12 @@ def updateProfile(id):
     }
 
     return jsonify(data), 201
+
+
+@app.route('/users/avatar/<filename>')
+def avatar(filename):
+    return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'images/avatars'),
+                               filename)
 
 """ @app.route('/users', methods=['GET', 'POST'])
 @app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
