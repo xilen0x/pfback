@@ -24,7 +24,7 @@ manager.add_command("db", MigrateCommand)
 
 CORS(app)
 
-""" rutas """
+################# RUTAS #################
 @app.route('/')
 def main():
     return render_template('index.html')
@@ -72,7 +72,6 @@ def register():
     ciudad = request.json.get('ciudad', '')
     sexo = request.json.get('sexo', '')
     #avatar = request.json.get('avatar', '')
-
 #VALIDACIONES
     if not email or email == '':
         return jsonify({"msg": "Missing email"}), 400
@@ -139,12 +138,47 @@ def changePassword():
     if bcrypt.check_password_hash(user.password, oldpassword):
         user.password = bcrypt.generate_password_hash(password)
         db.session.commit()
-        return jsonify({"success": "Tu contraseña ha cambiado exitosamente! -119"}), 200
+        return jsonify({"success": "Tu contraseña ha cambiado exitosamente!"}), 200
     else:
-        return jsonify({"msg": "La contraseña actual no es correcta! -121"}), 400
+        return jsonify({"msg": "La contraseña actual no es correcta!"}), 400
 
+@app.route('/update-profile/<int:id>', methods=['PUT'])
+@jwt_required
+def updateProfile(id):
+    if not request.is_json:
+        return jsonify({"msg": "Al parecer no es un objeto JSON"}), 400
 
-@app.route('/users', methods=['GET', 'POST'])
+    email = request.json.get('email', None)
+    nombre = request.json.get('nombre', '')
+    apellido = request.json.get('apellido', '')
+    rut = request.json.get('rut', '')
+    pais = request.json.get('pais', '')
+    ciudad = request.json.get('ciudad', '')
+    sexo = request.json.get('sexo', '')
+    #avatar = request.json.get('avatar', '')
+
+    user = User.query.filter_by(email=email).first()
+    user = User() # se crea una instancia de la clase User
+    #asignando valores a los campos corresp.
+    user.email = email 
+    user.nombre = nombre
+    user.apellido = apellido
+    user.rut = rut
+    user.pais = pais
+    user.ciudad = ciudad
+    #user.u_avatar = u_avatar
+    
+    db.session.commit()
+
+    access_token = create_access_token(identity=user.email)
+    data = {
+        "access_token": access_token,
+        "user": user.serialize()
+    }
+
+    return jsonify(data), 201
+
+""" @app.route('/users', methods=['GET', 'POST'])
 @app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
 @jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
 def users(id = None):
@@ -155,7 +189,7 @@ def users(id = None):
     if request.method == 'PUT':
         return jsonify({"msg": "users put"}), 200
     if request.method == 'DELETE':
-        return jsonify({"msg": "users delete"}), 200
+        return jsonify({"msg": "users delete"}), 200 """
 
 
 if __name__ == '__main__':
