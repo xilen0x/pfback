@@ -1,0 +1,101 @@
+@app.route('/tramits', methods=['GET', 'POST'])
+@app.route('/tramits/<int:tr_id>', methods=['GET', 'PUT', 'DELETE'])
+# @jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
+def todo(tr_id = None):
+    if request.method == 'GET':
+        if tr_id is not None:
+            pass
+        else:
+            tramits = Tramits.query.all()
+            tramits = list(map(lambda tramit: tramit.serialize(), tramits))
+            return jsonify(tramits), 200                      #Validacion de contenido
+        
+    if request.method == 'POST':
+        tramit = request.json.get('tramit', None)
+
+        if not tramit and tramit == "":
+            return jsonify({"msg": "Ingresar Tramite"}), 400
+
+        tramits = Tramits()
+        tramits.tramit = tramit                      #Guardando/Asignando valores
+
+        db.session.add(tramits)
+        db.session.commit()
+
+        return jsonify(tramits.serialize()), 200
+
+    if request.method == 'PUT':
+        tramit = request.json.get("tramit", None)
+
+        if not tramit and tramit == "":
+            return jsonify({"msg": "Field tramite is required"}), 400  # 400 o 422
+
+        tra_post = Tramits.query.get(tr_id) #busca por el id
+    
+        if not tra_tas_post:
+            return jsonify({"msg": "Not Found"}), 404 # para no actualizar algo q no existe
+
+        tra_post.tramit = tramit
+
+        db.session.commit() # para actualizar y guardar en la bd
+
+        return jsonify(tra_tas_post.serialize()), 200
+
+    if request.method == 'DELETE':
+        tramit = Tramits.query.get(tr_id)
+        if not tramit:
+            return jsonify({"msg": "Item not found"}), 400
+        db.session.delete(tramit)
+        db.session.commit()
+        return jsonify({"msg": "Item deleted"}), 200
+
+@app.route('/tasks', methods=['GET', 'POST'])
+@app.route('/tasks/<int:ta_id>', methods=['GET', 'PUT', 'DELETE'])
+# @jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
+def todo(ta_id = None):
+    if request.method == 'GET':
+        if ta_id is not None:
+            pass
+        else:
+            tasks = Tasks.query.all()
+            tasks = list(map(lambda task: task.serialize(), tasks))
+            return jsonify(tasks), 200                      #Validacion de contenido
+        
+    if request.method == 'POST':
+        task = request.json.get('task', None)
+
+        if not task and task == "":
+            return jsonify({"msg": "Ingresar Tarea"}), 400
+
+        tasks = Tasks()
+        tasks.task = task                        #Guardando/Asignando valores
+
+        db.session.add(tasks)
+        db.session.commit()
+
+        return jsonify(tasks.serialize()), 200
+
+    if request.method == 'PUT':
+        task = request.json.get("tramit", None)
+
+        if not task and task == "":
+            return jsonify({"msg": "Field tarea is required"}), 400  # 400 o 422
+
+        tas_post = Tasks.query.get(ta_id) #busca por el id
+    
+        if not tas_post:
+            return jsonify({"msg": "Not Found"}), 404 # para no actualizar algo q no existe
+
+        tas_post.task = task
+
+        db.session.commit() # para actualizar y guardar en la bd
+
+        return jsonify(tas_post.serialize()), 200
+
+    if request.method == 'DELETE':
+        task = Task.query.get(ta_id)
+        if not task:
+            return jsonify({"msg": "Item not found"}), 400
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({"msg": "Item deleted"}), 200
