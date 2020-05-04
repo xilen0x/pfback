@@ -6,7 +6,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True) #clave primaria
     nombre = db.Column(db.String(100), nullable=False)  #nullable=false -->que no puede estar nulo este campo
     apellido = db.Column(db.String(100), nullable=False)
-    rut = db.Column(db.Integer, unique=True)
+    rut = db.Column(db.String, unique=True)
     email = db.Column(db.String(100), unique=True) #unique=True --> que debe ser unico.
     pais = db.Column(db.String(100), nullable=True)
     ciudad = db.Column(db.String(100), nullable=True)

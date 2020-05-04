@@ -133,7 +133,7 @@ def register():
 
     return jsonify(data), 201
 
-@app.route('/update-profile', methods=['POST'])
+@app.route('/change-pass', methods=['PUT'])
 @jwt_required
 def changePassword():
     if not request.is_json:
@@ -161,20 +161,30 @@ def changePassword():
 @app.route('/update-profile/<int:id>', methods=['PUT'])
 @jwt_required
 def updateProfile(id):
-    if not request.is_json:
-        return jsonify({"msg": "Al parecer no es un objeto JSON"}), 400
+    nombre = request.form.get('nombre', '')
+    apellido = request.form.get('apellido', '')
+    rut = request.form.get('rut', '')
+    email = request.form.get('email', None)
+    pais = request.form.get('pais', '')
+    ciudad = request.form.get('ciudad', '')
 
-    nombre = request.json.get('nombre', '')
-    apellido = request.json.get('apellido', '')
-    rut = request.json.get('rut', '')
-    email = request.json.get('email', None)
-    pais = request.json.get('pais', '')
-    ciudad = request.json.get('ciudad', '')
-    sexo = request.json.get('sexo', '')
-    #avatar = request.json.get('avatar', '')
+    #VALIDACIONES OBLIGATORIAS
+    if not nombre or nombre == '':
+        return jsonify({"msg": "Missing nombre"}), 400
+    if not apellido or apellido == '':
+        return jsonify({"msg": "Missing apellido"}), 400
+    if not rut or rut == '':
+        return jsonify({"msg": "Missing rut"}), 400
+    if not email or email == '':
+        return jsonify({"msg": "Missing email"}), 400
+    if not pais or pais == '':
+        return jsonify({"msg": "Missing País"}), 400
+    if not ciudad or ciudad == '':
+        return jsonify({"msg": "Missing Ciudad"}), 400
 
-    user = User.query.filter_by(email=email).first()
-    user = User() # se crea una instancia de la clase User
+    
+    user = User.query.get(id)
+
     #asignando valores a los campos corresp.
     user.nombre = nombre
     user.apellido = apellido
@@ -182,36 +192,21 @@ def updateProfile(id):
     user.email = email 
     user.pais = pais
     user.ciudad = ciudad
-    #user.u_avatar = u_avatar
-    
+
     db.session.commit()
 
-    access_token = create_access_token(identity=user.email)
     data = {
-        "access_token": access_token,
         "user": user.serialize()
     }
 
     return jsonify(data), 201
 
 
+
 @app.route('/users/avatar/<filename>')
 def avatar(filename):
     return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'images/avatars'),
                                filename)
-
-""" @app.route('/users', methods=['GET', 'POST'])
-@app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-@jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
-def users(id = None):
-    if request.method == 'GET':
-        return jsonify({"msg": "users get"}), 200
-    if request.method == 'POST':
-        return jsonify({"msg": "users post"}), 200
-    if request.method == 'PUT':
-        return jsonify({"msg": "users put"}), 200
-    if request.method == 'DELETE':
-        return jsonify({"msg": "users delete"}), 200 """
 
 
 if __name__ == '__main__':
