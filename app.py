@@ -80,6 +80,7 @@ def register():
     password = request.form.get('password', None)
     #avatar = request.json.get('avatar', '')
     #VALIDACIONES OBLIGATORIAS
+
     if not nombre or nombre == '':
         return jsonify({"msg": "Missing nombre"}), 400
     if not apellido or apellido == '':
@@ -98,8 +99,8 @@ def register():
     user = User.query.filter_by(email=email).first()
     if user:
         return jsonify({"msg": "email already exist"}),400
-    rut = User.query.filter_by(rut=rut).first()
-    if rut:
+    userrut = User.query.filter_by(rut=rut).first()
+    if userrut:
         return jsonify({"msg": "rut already exist"}),400
 
     file = request.files['avatar']
@@ -108,6 +109,8 @@ def register():
         file.save(os.path.join(os.path.join(app.config['UPLOAD_FOLDER'], 'images/avatars'), filename))
     else:
         return jsonify({"msg":"Archivo no permitido, debe ser de extensión png, jpg, jpeg, gif o svg"}), 400
+
+    
 
     user = User() # se crea una instancia de la clase User
     #asignando valores a los campos corresp.
@@ -195,11 +198,7 @@ def updateProfile(id):
 
     db.session.commit()
 
-    data = {
-        "user": user.serialize()
-    }
-
-    return jsonify(data), 201
+    return jsonify(user.serialize()), 200
 
 
 
