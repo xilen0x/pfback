@@ -305,3 +305,93 @@ VIDEO3 [0:00 - 25:06] --- BASE DE DATOS ---
             ++ python app.py db init ++
             ++ python app.py db migrate ++
             ++ python app.py db upgrade ++
+
+
+
+
+
+    BASE PARA METODOS:
+
+        @app.route('/users', methods=['GET', 'POST'])
+        @app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+        @jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
+        def users(id = None):
+            if request.method == 'GET':
+                return jsonify({"msg": "users get"}), 200
+            if request.method == 'POST':
+                return jsonify({"msg": "users post"}), 200
+            if request.method == 'PUT':
+                return jsonify({"msg": "users put"}), 200
+            if request.method == 'DELETE':
+                return jsonify({"msg": "users delete"}), 200
+
+
+
+
+
+
+    PROPUESTA PARA METODOS:
+
+        @app.route('/todo', methods=['GET', 'POST'])
+        @app.route('/todo/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+        #@jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
+        def todo(id = None):
+            if request.method == 'GET':                                     #METODO GET (OBTENER INFORMACION)
+                if id is not None:                                              #Si ID no esta vacio
+                    todo = Todos.query.get(id)                                      #Busca en la tabla Todos el ID y entregalo en la variable todo
+                    if todo:                                                        #Si existe la variable todo (por la linea anterior)
+                        return jsonify(todo.serialize()), 200                       #devuelveme en formato json la serializacion de la variable todo con status 200
+                    else:                                                           #sino
+                        return jsonify({"msg": "Not Found"}), 404                       #despacha un mensaje en json que diga "Not Found" y el status 404
+                else:                                                              
+                    todos = Todos.query.all()                                   #Pero si ID esta vacio
+                    todos = list(map(lambda todo: todo.serialize(), todos))         #Traeme toda la informacion en la tabla Todos y almacenala en la variable todos
+                    return jsonify(todos), 200                                          #Y devuelveme en formato json la variable todos con el status 200
+        
+            if request.method == 'POST':                                    #METODO POST (AGREGAR INFORMACION)
+                tramite = request.json.get('tramite', None)                     #Llamamos a las variables "tramite" que este vacia y la introducimos en formato json en una variable del mismo nombre
+                tareas = request.json.get('tareas', None)                       #Y a la variable "tareas" que este vacia, la introducimos en formato json en una variable del mismo nombre
+
+                if not tramite and tramite == "":                               #En caso de que no exista el campo tramite o tramite este vacio
+                    return jsonify({"msg": "Ingresar Tramite"}), 400                #devuelveme un mensaje en formato json que diga "Ingresa Tramite" con el error 400
+                elif not tareas and tareas == "":                               #Y ADICIONALMENTE, si no se agrego el campo tareas o este esta vacio
+                    return jsonify({"msg": "Ingresar Tareas"}), 400                 #devuelveme un mensaje en formato json que diga "Ingresa Tarea" con el error 400
+
+                tramites = Todos()                                              #En caso de que la informacion este correcta, abre una variable "tramites" para almacenarla en la tabla "Todos"
+                tramites.tramite = tramite                                      #en esta nueva "super" variable "tramites" vienen los datos de tramite y,
+                tramites.tareas = tareas                                        #los datos de tareas
+
+                db.session.add(tramites)                                        #por lo tanto, agrega esta "super" variable "tramites"
+                db.session.commit()                                             #y guarda y cierra todo
+
+                return jsonify(tramites.serialize()), 200                       #Por ultimo devuelveme la serializacion de esta "super" variable con el status 200
+
+            if request.method == 'PUT':                                     #METODO PUT (ACTUALIZAR INFORMACION)
+                tramite = request.json.get("tramite", None)
+                tareas = request.json.get("tareas", None) #valor por defecto en none
+
+                if not tramite and tramite == "":
+                    return jsonify({"msg": "Field tramite is required"}), 400  # 400 o 422
+                elif not tareas and tareas == "":
+                    return jsonify({"msg": "Field tareas is required"}), 400  # 400 o 422
+
+                todopost = Todos.query.get(id) #busca por el id
+            
+                if not todopost:
+                    return jsonify({"msg": "Not Found"}), 404 # para no actualizar algo q no existe
+
+                todopost.tramite = tramite
+                todopost.tareas = tareas
+
+                db.session.commit() # para actualizar y guardar en la bd
+
+                return jsonify(todopost.serialize()), 200
+
+            if request.method == 'DELETE':
+                todos = Todos.query.get(id)
+                if not todos:
+                    return jsonify({"msg": "Item not found"}), 400
+                db.session.delete(todos)
+                db.session.commit()
+                return jsonify({"msg": "Item deleted"}), 200
+        
