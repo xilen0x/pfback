@@ -203,36 +203,37 @@ def register():
     #if not request.is_form:
     #    return jsonify({"msg": "Missing Form request"}), 400
 
-    email = request.form.get('email', None)
-    password = request.form.get('password', None)
     nombre = request.form.get('nombre', '')
     apellido = request.form.get('apellido', '')
     rut = request.form.get('rut', '')
+    email = request.form.get('email', None)
     pais = request.form.get('pais', '')
     ciudad = request.form.get('ciudad', '')
     sexo = request.form.get('sexo', '')
+    password = request.form.get('password', None)
     #avatar = request.json.get('avatar', '')
-    #VALIDACIONES
-    if not email or email == '':
-        return jsonify({"msg": "Missing email"}), 400
-    if not password or password == '':
-        return jsonify({"msg": "Missing password."}), 400
+    #VALIDACIONES OBLIGATORIAS
+
     if not nombre or nombre == '':
         return jsonify({"msg": "Missing nombre"}), 400
     if not apellido or apellido == '':
         return jsonify({"msg": "Missing apellido"}), 400
     if not rut or rut == '':
         return jsonify({"msg": "Missing rut"}), 400
+    if not email or email == '':
+        return jsonify({"msg": "Missing email"}), 400
     if not pais or pais == '':
         return jsonify({"msg": "Missing País"}), 400
     if not ciudad or ciudad == '':
         return jsonify({"msg": "Missing Ciudad"}), 400
+    if not password or password == '':
+        return jsonify({"msg": "Missing password."}), 400
     
     user = User.query.filter_by(email=email).first()
     if user:
         return jsonify({"msg": "email already exist"}),400
-    rut = User.query.filter_by(rut=rut).first()
-    if rut:
+    userrut = User.query.filter_by(rut=rut).first()
+    if userrut:
         return jsonify({"msg": "rut already exist"}),400
 
     file = request.files['avatar']
@@ -240,18 +241,20 @@ def register():
         filename = secure_filename(file.filename)
         file.save(os.path.join(os.path.join(app.config['UPLOAD_FOLDER'], 'images/avatars'), filename))
     else:
-        return jsonify({"msg":"Archivo no permitido, debe ser de extensión png, jpg, jpeg, gif o svg"})
+        return jsonify({"msg":"Archivo no permitido, debe ser de extensión png, jpg, jpeg, gif o svg"}), 400
+
+    
 
     user = User() # se crea una instancia de la clase User
     #asignando valores a los campos corresp.
-    user.email = email 
-    user.password = bcrypt.generate_password_hash(password)
     user.nombre = nombre
     user.apellido = apellido
     user.rut = rut
+    user.email = email 
     user.pais = pais
     user.ciudad = ciudad
     user.sexo = sexo
+    user.password = bcrypt.generate_password_hash(password)
     if file:
         user.avatar = filename
 
@@ -266,7 +269,7 @@ def register():
 
     return jsonify(data), 201
 
-@app.route('/update-profile', methods=['POST'])
+@app.route('/change-pass', methods=['PUT'])
 @jwt_required
 def changePassword():
     if not request.is_json:
@@ -294,57 +297,48 @@ def changePassword():
 @app.route('/update-profile/<int:id>', methods=['PUT'])
 @jwt_required
 def updateProfile(id):
-    if not request.is_json:
-        return jsonify({"msg": "Al parecer no es un objeto JSON"}), 400
+    nombre = request.form.get('nombre', '')
+    apellido = request.form.get('apellido', '')
+    rut = request.form.get('rut', '')
+    email = request.form.get('email', None)
+    pais = request.form.get('pais', '')
+    ciudad = request.form.get('ciudad', '')
 
-    email = request.json.get('email', None)
-    nombre = request.json.get('nombre', '')
-    apellido = request.json.get('apellido', '')
-    rut = request.json.get('rut', '')
-    pais = request.json.get('pais', '')
-    ciudad = request.json.get('ciudad', '')
-    sexo = request.json.get('sexo', '')
-    #avatar = request.json.get('avatar', '')
+    #VALIDACIONES OBLIGATORIAS
+    if not nombre or nombre == '':
+        return jsonify({"msg": "Missing nombre"}), 400
+    if not apellido or apellido == '':
+        return jsonify({"msg": "Missing apellido"}), 400
+    if not rut or rut == '':
+        return jsonify({"msg": "Missing rut"}), 400
+    if not email or email == '':
+        return jsonify({"msg": "Missing email"}), 400
+    if not pais or pais == '':
+        return jsonify({"msg": "Missing País"}), 400
+    if not ciudad or ciudad == '':
+        return jsonify({"msg": "Missing Ciudad"}), 400
 
-    user = User.query.filter_by(email=email).first()
-    user = User() # se crea una instancia de la clase User
+    
+    user = User.query.get(id)
+
     #asignando valores a los campos corresp.
-    user.email = email 
     user.nombre = nombre
     user.apellido = apellido
     user.rut = rut
+    user.email = email 
     user.pais = pais
     user.ciudad = ciudad
-    #user.u_avatar = u_avatar
-    
+
     db.session.commit()
 
-    access_token = create_access_token(identity=user.email)
-    data = {
-        "access_token": access_token,
-        "user": user.serialize()
-    }
+    return jsonify(user.serialize()), 200
 
-    return jsonify(data), 201
 
 
 @app.route('/users/avatar/<filename>')
 def avatar(filename):
     return send_from_directory(os.path.join(app.config['UPLOAD_FOLDER'], 'images/avatars'),
                                filename)
-
-""" @app.route('/users', methods=['GET', 'POST'])
-@app.route('/users/<int:id>', methods=['GET', 'PUT', 'DELETE'])
-@jwt_required # llamando a jwt_required le indico q las rutas abajo son privadas y requiere autorización pra acceder
-def users(id = None):
-    if request.method == 'GET':
-        return jsonify({"msg": "usuario get"}), 200
-    if request.method == 'POST':
-        return jsonify({"msg": "users post"}), 200
-    if request.method == 'PUT':
-        return jsonify({"msg": "users put"}), 200
-    if request.method == 'DELETE':
-        return jsonify({"msg": "users delete"}), 200 """
 
 #DESDE AQUI PARTE DASHBOARD TODOLIST
 
