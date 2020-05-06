@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: dcd9be20b3dc
+Revision ID: ca73165cc4cf
 Revises: 
-Create Date: 2020-04-30 21:34:18.962567
+Create Date: 2020-05-03 14:40:33.578682
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'dcd9be20b3dc'
+revision = 'ca73165cc4cf'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,8 +22,9 @@ def upgrade():
     sa.Column('id_entrada', sa.Integer(), nullable=False),
     sa.Column('e_titulo', sa.String(length=100), nullable=False),
     sa.Column('e_cuerpo', sa.String(length=500), nullable=False),
+    sa.Column('e_cuerpopro', sa.String(length=1000), nullable=False),
     sa.Column('e_imagen', sa.String(length=250), nullable=True),
-    sa.Column('e_fecha', sa.String(length=200), nullable=False),
+    sa.Column('e_fecha', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id_entrada')
     )
     op.create_table('tasks',
@@ -56,10 +57,10 @@ def upgrade():
     )
     op.create_table('comentarios',
     sa.Column('id_comentario', sa.Integer(), nullable=False),
+    sa.Column('id_user', sa.String(), nullable=False),
     sa.Column('c_cuerpo', sa.String(length=500), nullable=False),
-    sa.Column('c_fecha', sa.String(length=200), nullable=False),
-    sa.Column('id_blog', sa.String(), nullable=False),
-    sa.ForeignKeyConstraint(['id_blog'], ['blog.id_entrada'], ),
+    sa.Column('c_fecha', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['id_user'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id_comentario')
     )
     op.create_table('tramits',

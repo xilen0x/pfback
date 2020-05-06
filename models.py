@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import date , time
+import datetime
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -99,8 +99,9 @@ class Blog(db.Model):
     id_entrada = db.Column(db.Integer, primary_key=True)
     e_titulo = db.Column(db.String(100), nullable=False)
     e_cuerpo = db.Column(db.String(500), nullable=False)
+    e_cuerpopro = db.Column(db.String(1000), nullable=False)
     e_imagen = db.Column(db.String(250), nullable=True, default='vista.jpg')
-    e_fecha = db.Column(db.String(200), nullable=False)
+    e_fecha = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
     
     
     def serialize(self):
@@ -108,6 +109,7 @@ class Blog(db.Model):
             "id_entrada":self.id_entrada,	
             "e_titulo":self.e_titulo,
             "e_cuerpo":self.e_cuerpo,
+            "e_cuerpopro":self.e_cuerpopro,
             "e_imagen":self.e_imagen,
             "e_fecha":self.e_fecha
 	}
@@ -116,10 +118,11 @@ class Blog(db.Model):
 class Comment(db.Model):
     __tablename__='comentarios'
     id_comentario = db.Column(db.Integer, primary_key=True)
+    users = db.relationship(User)
+    id_user = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)
     c_cuerpo = db.Column(db.String(500), nullable=False)
-    c_fecha = db.Column(db.String(200), nullable=False)
-    blog = db.relationship(Blog)
-    id_blog = db.Column(db.String, db.ForeignKey('blog.id_entrada'), nullable=False)#<--------- no estoy seguro pues ya tengo una variable id_entrada en la linea 103.
+    c_fecha = db.Column(db.DateTime, nullable=False, default=datetime.datetime.now)
+    
     
     
     def serialize(self):
@@ -127,5 +130,5 @@ class Comment(db.Model):
             "id_comentario":self.id_comentario,
             "c_cuerpo":self.c_cuerpo,
             "c_fecha":self.c_fecha,
-            "blog":self.blog.serialize(),
+            "users":self.users.serialize(),
 	}

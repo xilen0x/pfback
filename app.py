@@ -57,6 +57,7 @@ def blog(id = None):
         
         e_titulo = request.form.get('e_titulo', None)
         e_cuerpo = request.form.get('e_cuerpo', None)
+        e_cuerpopro = request.form.get('e_cuerpopro', None)
         e_fecha = request.form.get('e_fecha', None)
        
               
@@ -64,8 +65,9 @@ def blog(id = None):
             return jsonify({"msg":"Field titulo is required"}), 400
         if not e_cuerpo and e_cuerpo == "":
             return jsonify({"msg":"Field cuerpo is required"}), 400
-        if not e_fecha and e_fecha == "":
-            return jsonify({"msg":"Field fecha is required"}), 400
+        if not e_cuerpopro and e_cuerpopro == "":
+            return jsonify({"msg":"Field cuerpopro is required"}), 400    
+        
 
         file = request.files['e_imagen'] 
         if file and file.filename !='' and allowed_file(file.filename, ALLOWED_EXTENSIONS_IMAGES):
@@ -77,6 +79,7 @@ def blog(id = None):
          
         blog.e_titulo = e_titulo 
         blog.e_cuerpo = e_cuerpo 
+        blog.e_cuerpopro = e_cuerpopro
         blog.e_fecha = e_fecha
         if file:
             blog.e_imagen = filename
@@ -89,15 +92,17 @@ def blog(id = None):
     if request.method == 'PUT':
         e_titulo = request.form.get('e_titulo', None)
         e_cuerpo = request.form.get('e_cuerpo', None)
-        e_fecha = request.form.get('e_fecha', None)
+        e_cuerpopro = request.form.get('e_cuerpopro', None)
+        
        
               
         if not e_titulo and e_titulo == "":
             return jsonify({"msg":"Field titulo is required"}), 400
         if not e_cuerpo and e_cuerpo == "":
             return jsonify({"msg":"Field cuerpo is required"}), 400
-        if not e_fecha and e_fecha == "":
-            return jsonify({"msg":"Field fecha is required"}), 400
+        if not e_cuerpopro and e_cuerpopro == "":
+            return jsonify({"msg":"Field cuerpopro is required"}), 400    
+        
 
         file = request.files['e_imagen'] 
         if file and file.filename !='' and allowed_file(file.filename, ALLOWED_EXTENSIONS_IMAGES):
@@ -110,7 +115,8 @@ def blog(id = None):
 
         blog.e_titulo = e_titulo 
         blog.e_cuerpo = e_cuerpo 
-        blog.e_fecha = e_fecha
+        blog.e_cuerpopro = e_cuerpopro
+        
         if file:
             blog.e_imagen = filename
  
@@ -145,22 +151,21 @@ def comment(id = None):
         
         c_cuerpo = request.json.get('c_cuerpo', None)
         c_fecha = request.json.get('c_fecha', None)
-        id_blog = request.json.get('id_blog', None)
-        
+        id_user = request.json.get('id_user', None)
         
         if not c_cuerpo and c_cuerpo == "":
             return jsonify({"msg":"Field coment is required"}), 400
         if not c_fecha and c_fecha == "":
-            return jsonify({"msg":"Field fecha is required"}), 400
-        if not id_blog and id_blog == "":
-            return jsonify({"msg":"Field id_blog is required"}), 400    
+            return jsonify({"msg":"Field fecha is required"}), 400   
+        if not id_user and id_user == "":
+            return jsonify({"msg":"Field id_user is required"}), 400
 
         coment = Comment()
         
         
         coment.c_cuerpo = c_cuerpo
         coment.c_fecha = c_fecha
-        coment.id_blog = id_blog
+        coment.id_user = id_user
 
         db.session.add(coment)
         db.session.commit()
